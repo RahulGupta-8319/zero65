@@ -15,6 +15,7 @@ router.post('/login', userController.loginUser)
 
 router.post('/createexpense', expenseController.createExpense)
 router.get('/getexpense/:emailId', expenseController.getExpense)
+router.delete('/deleteexpene/:id', expenseController.deleteExpense)
 
 
 router.all('*', (req, res) => {

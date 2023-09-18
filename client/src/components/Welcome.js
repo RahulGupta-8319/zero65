@@ -15,12 +15,18 @@ const Welcome = ({ loginUser, setLoginUser }) => {
         head: "",
         tag: "",
         note: "",
-        email: ""
+        email: "",
+        _id: ""
+
     })
 
     const [list, setList] = useState([])
     const [summary, setSummary] = useState([])
 
+    const [editId, setEditId] = useState(0)
+
+
+    
     //console.log("userloanObj", userLoanObj);
 
     const handleLogout = (e) => {
@@ -61,10 +67,8 @@ const Welcome = ({ loginUser, setLoginUser }) => {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        console.log(exense);
-
         try {
-            console.log(exense);
+            // console.log("exense", exense);
             let res = await axios.post('http://localhost:5000/createexpense', exense)
 
             if (res.data) {
@@ -72,7 +76,8 @@ const Welcome = ({ loginUser, setLoginUser }) => {
                 let msg = res.data.message
                 toast.success(msg)
                 fetchData()
-                // setExpense({ date: "", amount: "", head: "", tag: "", note: "" })
+                setEditId(0)
+                setExpense({ date: "", amount: "", head: "", tag: "", note: "", _id: "" })
             }
 
         } catch (error) {
@@ -82,6 +87,34 @@ const Welcome = ({ loginUser, setLoginUser }) => {
         }
     }
 
+    const handleEdit = (id) => {
+
+        const editExpense = list.find((obj) => obj._id === id)
+        console.log("editExpense", editExpense);
+        setExpense(editExpense)
+        setEditId(id)
+    }
+
+    const handleDelete = async (id) => {
+
+        try {
+            console.log("exense", id);
+            let res = await axios.delete(`http://localhost:5000/deleteexpene/${id}`)
+
+            if (res.data) {
+
+                let msg = res.data.message
+                toast.success(msg)
+                fetchData()
+            }
+
+        } catch (error) {
+            console.log(error);
+            let msg = error.response.data.message
+            toast.error(msg)
+        }
+
+    }
 
 
     useEffect(() => {
@@ -91,7 +124,7 @@ const Welcome = ({ loginUser, setLoginUser }) => {
 
     }, []);
 
-   
+
 
     return (
 
@@ -108,6 +141,7 @@ const Welcome = ({ loginUser, setLoginUser }) => {
                         <h1 class="font-serif font-extrabold text-3xl text-gray-800">
                             Hi, {loginUser.firstName} !👋
                         </h1>
+
 
                     </div>
                     <div class="group relative ">
@@ -219,7 +253,10 @@ const Welcome = ({ loginUser, setLoginUser }) => {
                                 className='text-2xl font-semibold text-blue-500 border border-blue-400 rounded-full   py-3 w-full hover:text-white hover:bg-blue-500'
                                 onClick={handleSubmit}
                             >
-                                Add
+                                {
+                                    editId ? <div>Edit</div> : <div>Add</div>
+                                }
+
                             </button>
                         </div>
                     </div>
@@ -257,13 +294,21 @@ const Welcome = ({ loginUser, setLoginUser }) => {
                                                         <td className="border px-4 py-2">
                                                             {
                                                                 item.date
-
                                                             }
                                                         </td>
                                                         <td className="border px-4 py-2">{item.amount}</td>
                                                         <td className="border px-4 py-2">{item.head}</td>
                                                         <td className="border px-4 py-2">{item.tag}</td>
                                                         <td className="border px-4 py-2 max-w-[250px]">{item.note}</td>
+                                                        <td className='flex flex-row justify-center space-x-1 max-w-[150px]'>
+                                                            <button className='bg-blue-600 text-white rounded-full px-2 py-1 text-sm hover:bg-orange-500  ' onClick={() => handleEdit(item._id)}>
+                                                                Edit
+                                                            </button>
+                                                            <button className='bg-blue-600 text-white rounded-full px-2 py-1 text-sm hover:bg-orange-500 ' onClick={() => handleDelete(item._id)}>
+                                                                Delete
+                                                            </button>
+                                                        </td>
+                                                        
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -289,6 +334,9 @@ const Welcome = ({ loginUser, setLoginUser }) => {
                         <div class="heading flex justify-center  font-bold text-gray-600 text-2xl font pb-5  ">
                             <h1>Summary </h1>
                         </div>
+                        {
+                            console.log("summary", summary)
+                        }
 
                         {
                             list.length > 0 ?
@@ -304,12 +352,21 @@ const Welcome = ({ loginUser, setLoginUser }) => {
                                             </thead>
                                             <tbody>
                                                 {
-                                                    // console.log(summary)
                                                     summary.map(item =>
                                                         <tr >
                                                             <td className="border px-4 py-2">{item.head}</td>
                                                             <td className="border px-4 py-2">{item.totalAmount}</td>
-                                                            <td className="border px-4 py-2">{item.tags}</td>
+
+                                                            <td className="border px-4 py-2">
+                                                                {
+                                                                    item.tags.map((item) => (
+                                                                        <div>
+                                                                            <span>{item.tag} : </span>
+                                                                            <span>{item.amount}</span>
+                                                                        </div>
+                                                                    ))
+                                                                }
+                                                            </td>
 
                                                         </tr>)
                                                 }
@@ -325,20 +382,15 @@ const Welcome = ({ loginUser, setLoginUser }) => {
                                 )
                         }
 
-
-
-
-
-
                     </div>
-
                 </div>
-
 
             </div>
             <div class="h-screen"></div>
         </div >
     )
 }
+
+
 
 export default Welcome
